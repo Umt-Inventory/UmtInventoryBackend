@@ -1,17 +1,26 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using UmtInventoryBackend.Enums;
 
-namespace UmtInventoryBakend.Entities;
+namespace UmtInventoryBackend.Entities;
 
 public class Item : IEntity
-{
-    [Key]
+{ 
+    [Key] 
     public int Id { get; set; }
     public double Price { get; set; }
-    public double Quantity { get; set; }
-    public string Condition { get; set; }
+    public int Quantity { get; set; }
+    public Condition Condition { get; set; }
+   
+    [MaxLength(100)]
     public string Description { get; set; }
+    [Required]
     public string Name { get; set; }
-    public string Type { get; set; }
-    public string Status { get; set; }
-
+    public UserType Type { get; set; }
+    
+    /* One-to-many relations */
+    
+    public int WorkspaceId { get; set; } // New foreign key
+    
+    public virtual Workspace Workspace { get; set; } // Reference to Workspace entity
+   
 }

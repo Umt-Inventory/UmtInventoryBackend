@@ -1,4 +1,4 @@
-﻿namespace UmtInventoryBakend.Entities;
+﻿namespace UmtInventoryBackend.Entities;
 
 public interface IEntity
 {

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using UmtInventoryBakend.Data;
+using UmtInventoryBackend.Data;
 
 #nullable disable
 
-namespace UmtInventoryBakend.Migrations
+namespace UmtInventoryBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace UmtInventoryBakend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.Item", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.FinancialRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,13 +30,44 @@ namespace UmtInventoryBakend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Condition")
+                    b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("RequestAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FinancialRequests");
+                });
+
+            modelBuilder.Entity("UmtInventoryBackend.Entities.Item", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Condition")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -45,23 +76,23 @@ namespace UmtInventoryBakend.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
 
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Items");
                 });
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.Ticket", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.StockRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -69,30 +100,35 @@ namespace UmtInventoryBakend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RequestDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("RequestedQuantity")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tickets");
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockRequests");
                 });
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.User", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -104,19 +140,28 @@ namespace UmtInventoryBakend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Phone")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Role")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WorkspaceID")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceID");
 
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.Workspace", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.Workspace", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -135,26 +180,66 @@ namespace UmtInventoryBakend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Workspaces");
                 });
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.Workspace", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.FinancialRequest", b =>
                 {
-                    b.HasOne("UmtInventoryBakend.Entities.User", null)
-                        .WithMany("Workspace")
-                        .HasForeignKey("UserId");
+                    b.HasOne("UmtInventoryBackend.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UmtInventoryBakend.Entities.User", b =>
+            modelBuilder.Entity("UmtInventoryBackend.Entities.Item", b =>
                 {
+                    b.HasOne("UmtInventoryBackend.Entities.Workspace", "Workspace")
+                        .WithMany("Items")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("UmtInventoryBackend.Entities.StockRequest", b =>
+                {
+                    b.HasOne("UmtInventoryBackend.Entities.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UmtInventoryBackend.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("UmtInventoryBackend.Entities.User", b =>
+                {
+                    b.HasOne("UmtInventoryBackend.Entities.Workspace", "Workspace")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("UmtInventoryBackend.Entities.Workspace", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

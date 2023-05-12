@@ -1,8 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using UmtInventoryBakend.Entities;
+using UmtInventoryBackend.Entities;
 
-namespace UmtInventoryBakend.Data;
+namespace UmtInventoryBackend.Data;
 
 public class ApplicationDbContext : DbContext
 {
@@ -12,10 +13,13 @@ public class ApplicationDbContext : DbContext
 
 
     public DbSet<User> Users { get; set; }
+    
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<Item> Items { get; set; }
-    public DbSet<Ticket> Tickets { get; set; }
-
+    
+    public DbSet<StockRequest> StockRequests { get; set; }
+ 
+    public DbSet<FinancialRequest> FinancialRequests { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

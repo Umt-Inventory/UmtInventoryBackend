@@ -1,14 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using UmtInventoryBackend.Enums;
 
-namespace UmtInventoryBakend.Entities;
+namespace UmtInventoryBackend.Entities;
 
 public class User : IEntity
 {
-    [Key]
+    [Key] 
     public int Id { get; set; }
+    public string Name { get; set; }
     public string Email { get; set; }
-    public string Role { get; set; }
-    public int Phone { get; set; }
-    public ICollection<Workspace> Workspace { get; set; }
-   
+    public UserRole Role { get; set; }
+    public string Phone { get; set; }
+    
+    /* One-to-many relations */
+    
+     public int WorkspaceID { get; set; }
+     
+     public Workspace Workspace { get; set; }
+
+
 }
