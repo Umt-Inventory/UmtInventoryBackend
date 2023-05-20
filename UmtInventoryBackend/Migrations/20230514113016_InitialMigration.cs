@@ -13,13 +13,32 @@ namespace UmtInventoryBackend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ItemDto",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Price = table.Column<double>(type: "double precision", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Condition = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    WorkspaceId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemDto", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Workspaces",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     Building = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -159,6 +178,9 @@ namespace UmtInventoryBackend.Migrations
         {
             migrationBuilder.DropTable(
                 name: "FinancialRequests");
+
+            migrationBuilder.DropTable(
+                name: "ItemDto");
 
             migrationBuilder.DropTable(
                 name: "StockRequests");

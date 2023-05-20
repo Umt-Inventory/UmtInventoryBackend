@@ -12,8 +12,8 @@ using UmtInventoryBackend.Data;
 namespace UmtInventoryBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230512091857_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20230520182815_secondMigration")]
+    partial class secondMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -147,12 +147,19 @@ namespace UmtInventoryBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Password")
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("WorkspaceID")
                         .HasColumnType("integer");
@@ -179,13 +186,48 @@ namespace UmtInventoryBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.ToTable("Workspaces");
+                });
+
+            modelBuilder.Entity("UmtInventoryBackend.Models.ItemDto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Condition")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ItemDto");
                 });
 
             modelBuilder.Entity("UmtInventoryBackend.Entities.FinancialRequest", b =>

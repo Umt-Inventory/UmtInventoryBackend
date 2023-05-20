@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UmtInventoryBackend.Entities;
 
+
 public class ItemExcelService
 {
     public byte[] ExportItemsToExcel(List<Item> items)
@@ -16,6 +17,14 @@ public class ItemExcelService
             worksheet.Cells[1, 3].Value = "Price";
             worksheet.Cells[1, 4].Value = "Quantity";
             worksheet.Cells[1, 5].Value = "Condition";
+
+            // Apply formatting to the column headers
+            using (var range = worksheet.Cells[1, 1, 1, 5])
+            {
+                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.ColorTranslator.FromHtml("#4f81bd"));
+            }
 
             // Fill in the data rows
             for (int i = 0; i < items.Count; i++)

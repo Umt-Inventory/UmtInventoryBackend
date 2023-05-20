@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UmtInventoryBackend.Data;
@@ -33,30 +29,31 @@ public class ItemController : Controller
     }
 
     [HttpGet]
-    [Route("GetPaginatedItems")]
-    public ActionResult<PaginatedItems<Item>> GetPaginatedItems(int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
-    {
-        var query = _dbContext.Items.AsQueryable();
-
-        if (filterUserType != UserType.IT)
+        [Route("GetPaginatedItems")]
+        public ActionResult<PaginatedItems<Item>> GetPaginatedItems(int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
         {
-            query = query.Where(i => i.Type == filterUserType);
+            var query = _dbContext.Items.AsQueryable();
+
+            if (filterUserType != UserType.IT)
+            {
+                query = query.Where(i => i.Type == filterUserType);
+            }
+
+            var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var totalItems = query.Count();
+
+            var paginatedItems = new PaginatedItems<Item>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                FilterUserType = filterUserType
+            };
+
+            return Ok(paginatedItems);
         }
 
-        var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-        var totalItems = query.Count();
-
-        var paginatedItems = new PaginatedItems<Item>
-        {
-            Items = items,
-            TotalItems = totalItems,
-            Page = page,
-            PageSize = pageSize,
-            FilterUserType = filterUserType
-        };
-
-        return Ok(paginatedItems);
-    }
     [HttpGet]
     [Route("GetItemById")]
     public async Task<ActionResult<IEnumerable<User>>> GetItemById(int id)
@@ -123,9 +120,16 @@ public class ItemController : Controller
 
     [HttpGet]
     [Route("ExportItems")]
-    public IActionResult ExportItems()
+    public IActionResult ExportItems(UserType? userType = null)
     {
-        var items = _dbContext.Items.ToList();
+        IQueryable<Item> query = _dbContext.Items;
+
+        if (userType != null)
+        {
+            query = query.Where(item => item.Type == userType);
+        }
+
+        var items = query.ToList();
         var excelBytes = _excelService.ExportItemsToExcel(items);
 
         var fileContent = new ByteArrayContent(excelBytes);
