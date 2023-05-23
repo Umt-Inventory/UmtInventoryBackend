@@ -75,3 +75,9 @@ C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\ne
 C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
 C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Swashbuckle.AspNetCore.Newtonsoft.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.MicrosoftAccount.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\abazi\RiderProjects\UmtInventoryBakend\UmtInventoryBackend\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll

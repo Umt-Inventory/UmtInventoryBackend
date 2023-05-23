@@ -4,6 +4,7 @@ using UmtInventoryBackend.Data;
 using UmtInventoryBackend.Entities;
 using UmtInventoryBackend.Enums;
 using UmtInventoryBackend.Models;
+using UmtInventoryBackend.Services;
 
 namespace UmtInventoryBackend.Controllers;
 
@@ -12,10 +13,12 @@ namespace UmtInventoryBackend.Controllers;
 public class UserController : Controller
 {
     private readonly ApplicationDbContext _dbContext;
-
-    public UserController(ApplicationDbContext dbContext)
+    private readonly HashingService _hashingService;
+    public UserController(ApplicationDbContext dbContext , HashingService hashingService )
     {
         _dbContext = dbContext;
+        _hashingService = hashingService;
+
     }
 
     [HttpGet]
@@ -81,7 +84,7 @@ public class UserController : Controller
 
 
     [HttpPost("AddEditUser")]
-    public async Task<ActionResult<UserDto>> PostClients(UserDto userDto)
+    public async Task<ActionResult<UserDto>> AddEditUser(UserCreateUpdateDto userDto)
     {
         if (!ModelState.IsValid)
         {
@@ -89,7 +92,6 @@ public class UserController : Controller
         }
 
         User user;
-        Workspace workspace;
 
         if (userDto.Id == 0)
         {
@@ -98,13 +100,14 @@ public class UserController : Controller
             {
                 Name = userDto.Name,
                 Email = userDto.Email,
+                Surname = userDto.Surname,
+                Password = _hashingService.HashPassword(userDto.Password),
                 Role = userDto.Role,
                 Phone = userDto.Phone,
                 WorkspaceID = userDto.WorkspaceID
             };
 
             _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
         }
         else
         {
@@ -118,11 +121,12 @@ public class UserController : Controller
 
             user.Name = userDto.Name;
             user.Email = userDto.Email;
+            user.Password = userDto.Password != null ? _hashingService.HashPassword(userDto.Password) : user.Password;
             user.Phone = userDto.Phone;
             user.WorkspaceID = userDto.WorkspaceID;
-
-            await _dbContext.SaveChangesAsync();
         }
+
+        await _dbContext.SaveChangesAsync();
 
         var returnUserDto = new UserDto
         {

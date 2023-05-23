@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Converters;
 using UmtInventoryBackend.Data;
+using UmtInventoryBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -50,6 +51,8 @@ builder.Services.AddAuthorization(options =>
 
 // Add ItemExcelService registration
 builder.Services.AddScoped<ItemExcelService>();
+builder.Services.AddScoped< HashingService>();
+builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 

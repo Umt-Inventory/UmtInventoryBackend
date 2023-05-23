@@ -89,7 +89,7 @@ public class ItemController : Controller
         if (existingItem != null)
         {
             existingItem.Name = item.Name;
-            existingItem.Description = item.Description;
+            existingItem.Description = item.Description;    
             existingItem.Price = item.Price;
             existingItem.Quantity = item.Quantity;
             existingItem.Condition = item.Condition;
