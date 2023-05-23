@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using UmtInventoryBackend.Enums;
 
 namespace UmtInventoryBackend.Entities;
 
@@ -10,11 +10,12 @@ public class Workspace : IEntity
     
     public string Name { get; set; }
     
-    public string Type { get; set; }
+    public WorkspaceTypes Type { get; set; }
     
-    public int Building { get; set; }
+    public Buildings Building { get; set; }
     
     public ICollection<Item> Items { get; set; } // A Workspace can have many Items
     
  
 }
+
