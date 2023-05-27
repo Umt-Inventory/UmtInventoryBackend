@@ -18,6 +18,6 @@ public class UserDto
     [Phone]
     public string Phone { get; set; }
     
-    public int WorkspaceID { get; set; } // New property
+   
     
 }

@@ -16,11 +16,5 @@ public class User : IEntity
     public UserRole Role { get; set; }
     public string Phone { get; set; }
     
-    /* One-to-many relations */
-    
-     public int WorkspaceID { get; set; }
-     
-     public Workspace Workspace { get; set; }
-
 
 }

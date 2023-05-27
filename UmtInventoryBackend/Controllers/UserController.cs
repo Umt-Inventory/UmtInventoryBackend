@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UmtInventoryBackend.Data;
 using UmtInventoryBackend.Entities;
@@ -22,6 +23,7 @@ public class UserController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<PaginatedUsers<UserDto>> GetUsers(int page = 1, int pageSize = 10, UserRole filterUserRole = UserRole.IT)
     {
         var query = _dbContext.Users.AsQueryable();
@@ -44,7 +46,7 @@ public class UserController : Controller
             Email = u.Email,
             Role = u.Role,
             Phone = u.Phone,
-            WorkspaceID = u.WorkspaceID
+    
         }).ToList();
 
         var totalUsers = query.Count();
@@ -63,6 +65,7 @@ public class UserController : Controller
 
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult<User>> GetUserById(int id)
     {
         var user = await _dbContext.Users.FindAsync(id);
@@ -72,6 +75,7 @@ public class UserController : Controller
     }
 
     [HttpGet("GetUsersByRole/{role}")]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<User>>> GetUsersByRole(UserRole role)
     {
         var users = await _dbContext.Users.Where(u => u.Role == role).ToListAsync();
@@ -84,6 +88,7 @@ public class UserController : Controller
 
 
     [HttpPost("AddEditUser")]
+    [AllowAnonymous]
     public async Task<ActionResult<UserDto>> AddEditUser(UserCreateUpdateDto userDto)
     {
         if (!ModelState.IsValid)
@@ -104,7 +109,7 @@ public class UserController : Controller
                 Password = _hashingService.HashPassword(userDto.Password),
                 Role = userDto.Role,
                 Phone = userDto.Phone,
-                WorkspaceID = userDto.WorkspaceID
+        
             };
 
             _dbContext.Users.Add(user);
@@ -121,9 +126,10 @@ public class UserController : Controller
 
             user.Name = userDto.Name;
             user.Email = userDto.Email;
-            user.Password = userDto.Password != null ? _hashingService.HashPassword(userDto.Password) : user.Password;
             user.Phone = userDto.Phone;
-            user.WorkspaceID = userDto.WorkspaceID;
+    
+            user.Surname = userDto.Surname;
+            user.Role = userDto.Role;
         }
 
         await _dbContext.SaveChangesAsync();
@@ -135,15 +141,40 @@ public class UserController : Controller
             Email = user.Email,
             Role = user.Role,
             Phone = user.Phone,
-            WorkspaceID = user.WorkspaceID
+ 
         };
 
         return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, returnUserDto);
     }
 
+    [HttpPost]
+    [Route("ChangePassword")]
+    [AllowAnonymous]
+    public async Task<ActionResult> ChangePassword(ChangePasswordDto model)
+    {
+        // Find the user
+        var user = await _dbContext.Users.FindAsync(model.Id);
+        if (user == null) 
+        {
+            return NotFound(); // User with the specified id not found
+        }
+
+        // Verify the old password
+        if (!_hashingService.CheckPassword(user.Password, model.OldPassword)) 
+        {
+            return BadRequest("Old password is incorrect"); 
+        }
+
+        // Change the password
+        user.Password = _hashingService.HashPassword(model.NewPassword);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(); // Password successfully changed
+    }
 
     [HttpDelete]
     [Route("DeleteUser/{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> DeleteUser(int id)
     {
         var user = await _dbContext.Users.FindAsync(id);
@@ -152,6 +183,6 @@ public class UserController : Controller
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();
 
-        return NoContent(); // User successfully deleted
+        return Ok(); // User successfully deleted
     }
 }

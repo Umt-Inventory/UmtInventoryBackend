@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
 using UmtInventoryBackend.Data;
 using UmtInventoryBackend.Services;
 
@@ -25,9 +26,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
         options.SerializerSettings.Converters.Add(new StringEnumConverter());
     });
-    
+
 builder.Services.AddDbContext<ApplicationDbContext>(o =>
     o.UseNpgsql(builder.Configuration.GetConnectionString("apiPostgreCon")));
 
@@ -51,7 +53,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add ItemExcelService registration
 builder.Services.AddScoped<ItemExcelService>();
-builder.Services.AddScoped< HashingService>();
+builder.Services.AddScoped<HashingService>();
 builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
@@ -62,7 +64,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{builder.Environment.ApplicationName} v1"));
 }
-
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
