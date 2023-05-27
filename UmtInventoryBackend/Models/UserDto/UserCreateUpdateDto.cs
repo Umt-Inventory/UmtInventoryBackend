@@ -12,5 +12,5 @@ public class UserCreateUpdateDto
     public string Password { get; set; }
     public UserRole Role { get; set; }
     public string Phone { get; set; }
-    public int WorkspaceID { get; set; }
+  
 }

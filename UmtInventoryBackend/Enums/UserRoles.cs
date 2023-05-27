@@ -3,7 +3,7 @@
 public enum UserRole
 {
     HR,
-    XHEMIL,
+    STOCK_PROVIDER,
     IT,
     PERSONEL,
     FINANCE

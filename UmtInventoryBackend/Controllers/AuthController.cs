@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UmtInventoryBackend.Data;
 using UmtInventoryBackend.Models;
@@ -20,6 +21,7 @@ public class AuthController : Controller
     }
     [HttpPost]
     [Route("Login")]
+    [AllowAnonymous]
     public async Task<ActionResult<TokenResponse>> Login(UserLoginDto userLoginDto)
     {
         var user = await _dbContext.Users.Where(u => u.Email == userLoginDto.Email).FirstOrDefaultAsync();

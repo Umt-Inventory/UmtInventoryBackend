@@ -29,30 +29,37 @@ public class ItemController : Controller
     }
 
     [HttpGet]
-        [Route("GetPaginatedItems")]
-        public ActionResult<PaginatedItems<Item>> GetPaginatedItems(int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
+    [Route("GetPaginatedItems/{workspaceId}")]
+    public async Task<ActionResult<PaginatedItems<Item>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
+    {
+        var workspace = await _dbContext.Workspaces.Include(w => w.Items)
+            .SingleOrDefaultAsync(w => w.Id == workspaceId);
+        if (workspace == null)
         {
-            var query = _dbContext.Items.AsQueryable();
-
-            if (filterUserType != UserType.IT)
-            {
-                query = query.Where(i => i.Type == filterUserType);
-            }
-
-            var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            var totalItems = query.Count();
-
-            var paginatedItems = new PaginatedItems<Item>
-            {
-                Items = items,
-                TotalItems = totalItems,
-                Page = page,
-                PageSize = pageSize,
-                FilterUserType = filterUserType
-            };
-
-            return Ok(paginatedItems);
+            return NotFound($"Workspace with ID {workspaceId} not found.");
         }
+
+        var query = workspace.Items.AsQueryable();
+
+        if (filterUserType != UserType.IT)
+        {
+            query = query.Where(i => i.Type == filterUserType);
+        }
+
+        var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        var totalItems = query.Count();
+
+        var paginatedItems = new PaginatedItems<Item>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            Page = page,
+            PageSize = pageSize,
+            FilterUserType = filterUserType
+        };
+
+        return Ok(paginatedItems);
+    }
 
     [HttpGet]
     [Route("GetItemById")]

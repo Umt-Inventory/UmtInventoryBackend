@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UmtInventoryBackend.Data;
 using UmtInventoryBackend.Entities;
 using UmtInventoryBackend.Enums;
@@ -7,7 +8,7 @@ using UmtInventoryBackend.Models.WorkspaceDto;
 namespace UmtInventoryBackend.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-
+[AllowAnonymous]
 public class WorkspaceController : Controller
 {
     private readonly ApplicationDbContext _dbContext;
@@ -19,7 +20,8 @@ public class WorkspaceController : Controller
 
     [HttpGet]
     [Route("GetPaginatedWorkspaces")]
-    public ActionResult<PaginatedWorkspace<Workspace>> GetPaginatedWorkspaces(int page = 1, int pageSize = 10, Buildings? building = null)
+    [AllowAnonymous]
+    public ActionResult<PaginatedWorkspace<Workspace>> GetPaginatedWorkspaces(int page = 1, int pageSize = 100, Buildings? building = null)
     {
         var query = _dbContext.Workspaces.AsQueryable();
 
@@ -44,6 +46,7 @@ public class WorkspaceController : Controller
         return Ok(paginatedWorkspaces);
     }
     [HttpPost("AddEditWorkspace")]
+    [AllowAnonymous]
     public async Task<ActionResult<WorkspaceDto>> PostWorkspace(WorkspaceDto workspaceDto)
     {
         if (!ModelState.IsValid)
