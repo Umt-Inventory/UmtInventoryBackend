@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UmtInventoryBackend.Data;
@@ -10,6 +11,7 @@ namespace UmtInventoryBackend.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[AllowAnonymous]
 public class ItemController : Controller
 {
     private readonly ApplicationDbContext _dbContext;
@@ -30,7 +32,8 @@ public class ItemController : Controller
 
     [HttpGet]
     [Route("GetPaginatedItems/{workspaceId}")]
-    public async Task<ActionResult<PaginatedItems<Item>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
+    [AllowAnonymous]
+    public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
     {
         var workspace = await _dbContext.Workspaces.Include(w => w.Items)
             .SingleOrDefaultAsync(w => w.Id == workspaceId);
@@ -46,10 +49,22 @@ public class ItemController : Controller
             query = query.Where(i => i.Type == filterUserType);
         }
 
-        var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        var items = query.Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(i => new ItemDto
+            {
+                Id = i.Id,
+                Price = i.Price,
+                Quantity = i.Quantity,
+                Condition = i.Condition,
+                Description = i.Description,
+                Name = i.Name,
+                Type = i.Type
+            })
+            .ToList();
+
         var totalItems = query.Count();
 
-        var paginatedItems = new PaginatedItems<Item>
+        var paginatedItems = new PaginatedItems<ItemDto>
         {
             Items = items,
             TotalItems = totalItems,
@@ -61,8 +76,10 @@ public class ItemController : Controller
         return Ok(paginatedItems);
     }
 
+
     [HttpGet]
     [Route("GetItemById")]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<User>>> GetItemById(int id)
     {
         var itemExist = _dbContext.Items.Where(x => x.Id == id);
@@ -73,37 +90,38 @@ public class ItemController : Controller
     
     [HttpPost]
     [Route("AddEditItem")]
-    public async Task<ActionResult<Item>> AddEditItem(ItemDto item)
+    [AllowAnonymous]
+    public async Task<ActionResult<Item>> AddEditItem(AddEditItemDto addEditItem)
     {
-        var WorkspaceExist = _dbContext.Workspaces.Where(x => x.Id == item.WorkspaceId).FirstOrDefault();
-        if (item.Id == 0)
+        var WorkspaceExist = _dbContext.Workspaces.Where(x => x.Id == addEditItem.WorkspaceId).FirstOrDefault();
+        if (addEditItem.Id == 0)
         {
             Item newItem = new Item();
-            newItem.Name = item.Name;
-            newItem.Condition = item.Condition;
-            newItem.Description = item.Description;
-            newItem.Quantity = item.Quantity;
-            newItem.Price = item.Price;
-            newItem.WorkspaceId = item.WorkspaceId;
+            newItem.Name = addEditItem.Name;
+            newItem.Condition = addEditItem.Condition;
+            newItem.Description = addEditItem.Description;
+            newItem.Quantity = addEditItem.Quantity;
+            newItem.Price = addEditItem.Price;
+            newItem.WorkspaceId = addEditItem.WorkspaceId;
             newItem.Workspace = WorkspaceExist;
             
             _dbContext.Items.Add(newItem);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetItems), new { id = item.Id }, item);
+            return CreatedAtAction(nameof(GetItems), new { id = addEditItem.Id }, addEditItem);
         }
 
-        var existingItem = _dbContext.Items.FirstOrDefault(x => x.Id == item.Id);
+        var existingItem = _dbContext.Items.FirstOrDefault(x => x.Id == addEditItem.Id);
         if (existingItem != null)
         {
-            existingItem.Name = item.Name;
-            existingItem.Description = item.Description;    
-            existingItem.Price = item.Price;
-            existingItem.Quantity = item.Quantity;
-            existingItem.Condition = item.Condition;
+            existingItem.Name = addEditItem.Name;
+            existingItem.Description = addEditItem.Description;    
+            existingItem.Price = addEditItem.Price;
+            existingItem.Quantity = addEditItem.Quantity;
+            existingItem.Condition = addEditItem.Condition;
 
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetItems), new { id = item.Id }, existingItem);
+            return CreatedAtAction(nameof(GetItems), new { id = addEditItem.Id }, existingItem);
         }
 
         return NotFound();
@@ -111,6 +129,7 @@ public class ItemController : Controller
 
     [HttpDelete]
     [Route("DeleteItem/{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> DeleteItem(int id)
     {
         var item = await _dbContext.Items.FindAsync(id);

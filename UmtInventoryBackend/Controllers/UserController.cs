@@ -100,6 +100,15 @@ public class UserController : Controller
 
         if (userDto.Id == 0)
         {
+            // Check if a user with the same email already exists
+            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == userDto.Email);
+
+            if(existingUser != null)
+            {
+                // If a user with the same email already exists, return a BadRequest
+                return BadRequest("A user with this email already exists.");
+            }
+
             // Creating a new user
             user = new User
             {
@@ -109,7 +118,6 @@ public class UserController : Controller
                 Password = _hashingService.HashPassword(userDto.Password),
                 Role = userDto.Role,
                 Phone = userDto.Phone,
-        
             };
 
             _dbContext.Users.Add(user);
@@ -127,7 +135,6 @@ public class UserController : Controller
             user.Name = userDto.Name;
             user.Email = userDto.Email;
             user.Phone = userDto.Phone;
-    
             user.Surname = userDto.Surname;
             user.Role = userDto.Role;
         }
@@ -141,7 +148,6 @@ public class UserController : Controller
             Email = user.Email,
             Role = user.Role,
             Phone = user.Phone,
- 
         };
 
         return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, returnUserDto);
