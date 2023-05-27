@@ -33,7 +33,7 @@ public class ItemController : Controller
     [HttpGet]
     [Route("GetPaginatedItems/{workspaceId}")]
     [AllowAnonymous]
-    public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType filterUserType = UserType.IT)
+    public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType? filterUserType = null)
     {
         var workspace = await _dbContext.Workspaces.Include(w => w.Items)
             .SingleOrDefaultAsync(w => w.Id == workspaceId);
@@ -41,14 +41,14 @@ public class ItemController : Controller
         {
             return NotFound($"Workspace with ID {workspaceId} not found.");
         }
-
+    
         var query = workspace.Items.AsQueryable();
-
-        if (filterUserType != UserType.IT)
+    
+        if (filterUserType.HasValue)
         {
-            query = query.Where(i => i.Type == filterUserType);
+            query = query.Where(i => i.Type == filterUserType.Value);
         }
-
+    
         var items = query.Skip((page - 1) * pageSize).Take(pageSize)
             .Select(i => new ItemDto
             {
@@ -61,9 +61,9 @@ public class ItemController : Controller
                 Type = i.Type
             })
             .ToList();
-
+    
         var totalItems = query.Count();
-
+    
         var paginatedItems = new PaginatedItems<ItemDto>
         {
             Items = items,
@@ -72,7 +72,7 @@ public class ItemController : Controller
             PageSize = pageSize,
             FilterUserType = filterUserType
         };
-
+    
         return Ok(paginatedItems);
     }
 
@@ -104,6 +104,7 @@ public class ItemController : Controller
             newItem.Price = addEditItem.Price;
             newItem.WorkspaceId = addEditItem.WorkspaceId;
             newItem.Workspace = WorkspaceExist;
+            newItem.Type = addEditItem.Type;
             
             _dbContext.Items.Add(newItem);
             await _dbContext.SaveChangesAsync();

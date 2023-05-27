@@ -9,5 +9,5 @@ public class PaginatedItems<T>
     public int TotalItems { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
-    public UserType FilterUserType { get; set; }
+    public UserType? FilterUserType { get; set; }
 }
