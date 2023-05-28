@@ -87,71 +87,73 @@ public class UserController : Controller
 
 
 
-    [HttpPost("AddEditUser")]
-    [AllowAnonymous]
-    public async Task<ActionResult<UserDto>> AddEditUser(UserCreateUpdateDto userDto)
-    {
-        if (!ModelState.IsValid)
+        [HttpPost("AddEditUser")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserDto>> AddEditUser(UserCreateUpdateDto userDto)
         {
-            return BadRequest(ModelState);
-        }
-
-        User user;
-
-        if (userDto.Id == 0)
-        {
-            // Check if a user with the same email already exists
-            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == userDto.Email);
-
-            if(existingUser != null)
+            if (!ModelState.IsValid)
             {
-                // If a user with the same email already exists, return a BadRequest
-                return BadRequest("A user with this email already exists.");
+                return BadRequest(ModelState);
             }
 
-            // Creating a new user
-            user = new User
+            User user;
+
+            if (userDto.Id == 0)
             {
-                Name = userDto.Name,
-                Email = userDto.Email,
-                Surname = userDto.Surname,
-                Password = _hashingService.HashPassword(userDto.Password),
-                Role = userDto.Role,
-                Phone = userDto.Phone,
+                // Check if a user with the same email already exists
+                var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == userDto.Email);
+
+                if(existingUser != null)
+                {
+                    // If a user with the same email already exists, return a BadRequest
+                    return BadRequest("A user with this email already exists.");
+                }
+
+                // Creating a new user
+                user = new User
+                {
+                    Name = userDto.Name,
+                    Email = userDto.Email,
+                    Surname = userDto.Surname,
+                    Password = _hashingService.HashPassword(userDto.Password),
+                    Role = userDto.Role,
+                    Phone = userDto.Phone,
+                };
+
+                _dbContext.Users.Add(user);
+            }
+            else
+            {
+                // Updating an existing user
+                user = await _dbContext.Users.FindAsync(userDto.Id);
+
+                if (user == null)
+                {
+                    return NotFound("User not Found!"); // If the user with the specified Id does not exist
+                }
+
+                user.Name = userDto.Name;
+                user.Email = userDto.Email;
+                user.Phone = userDto.Phone;
+                user.Surname = userDto.Surname;
+                user.Role = userDto.Role;
+                user.Password = user.Password;
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            var returnUserDto = new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role,
+                Surname = user.Surname,
+                Phone = user.Phone,
             };
 
-            _dbContext.Users.Add(user);
+            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, returnUserDto);
         }
-        else
-        {
-            // Updating an existing user
-            user = await _dbContext.Users.FindAsync(userDto.Id);
-
-            if (user == null)
-            {
-                return NotFound("User not Found!"); // If the user with the specified Id does not exist
-            }
-
-            user.Name = userDto.Name;
-            user.Email = userDto.Email;
-            user.Phone = userDto.Phone;
-            user.Surname = userDto.Surname;
-            user.Role = userDto.Role;
-        }
-
-        await _dbContext.SaveChangesAsync();
-
-        var returnUserDto = new UserDto
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            Role = user.Role,
-            Phone = user.Phone,
-        };
-
-        return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, returnUserDto);
-    }
 
     [HttpPost]
     [Route("ChangePassword")]
