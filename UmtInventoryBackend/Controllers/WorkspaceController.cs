@@ -45,6 +45,29 @@ public class WorkspaceController : Controller
 
         return Ok(paginatedWorkspaces);
     }
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<WorkspaceDto>> GetWorkspaceById(int id)
+    {
+        var workspace = await _dbContext.Workspaces.FindAsync(id);
+
+        if (workspace == null)
+        {
+            return NotFound("Workspace not found!"); // If the workspace with the specified Id does not exist
+        }
+
+        var workspaceDto = new WorkspaceDto
+        {
+            Id = workspace.Id,
+            Name = workspace.Name,
+            Type = workspace.Type,
+            Building = workspace.Building
+        };
+
+        return Ok(workspaceDto);
+    }
+
+    
     [HttpPost("AddEditWorkspace")]
     [AllowAnonymous]
     public async Task<ActionResult<WorkspaceDto>> PostWorkspace(WorkspaceDto workspaceDto)
