@@ -164,13 +164,20 @@ public class ItemController : Controller
 
     [HttpGet]
     [Route("ExportItems")]
-    public IActionResult ExportItems(UserType? userType = null)
+    [AllowAnonymous]
+
+    public IActionResult ExportItems(UserType? userType = null, int? workspaceId = null)
     {
         IQueryable<Item> query = _dbContext.Items;
 
         if (userType != null)
         {
             query = query.Where(item => item.Type == userType);
+        }
+
+        if (workspaceId != null)
+        {
+            query = query.Where(item => item.WorkspaceId == workspaceId);
         }
 
         var items = query.ToList();
