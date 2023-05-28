@@ -80,13 +80,30 @@ public class ItemController : Controller
     [HttpGet]
     [Route("GetItemById")]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<User>>> GetItemById(int id)
+    public async Task<ActionResult<ItemDto>> GetItemById(int id)
     {
-        var itemExist = _dbContext.Items.Where(x => x.Id == id);
+        var itemExist = await _dbContext.Items.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (itemExist == null) return NotFound("Item not found!");
-        return Ok(itemExist);
+        if (itemExist == null)
+        {
+            return NotFound("Item not found!");
+        }
+
+        var itemDto = new ItemDto
+        {
+            Id = itemExist.Id,
+            Price = itemExist.Price,
+            Quantity = itemExist.Quantity,
+            Condition = itemExist.Condition,
+            Description = itemExist.Description,
+            Name = itemExist.Name,
+            Type = itemExist.Type
+        };
+
+        return Ok(itemDto);
     }
+
+
     
     [HttpPost]
     [Route("AddEditItem")]
