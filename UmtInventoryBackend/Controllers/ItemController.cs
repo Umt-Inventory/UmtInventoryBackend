@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +18,12 @@ public class ItemController : Controller
     private readonly ApplicationDbContext _dbContext;
     private readonly ItemExcelService _excelService;
 
-    public ItemController(ApplicationDbContext dbContext,ItemExcelService excelService)
+    public ItemController(ApplicationDbContext dbContext, ItemExcelService excelService)
     {
         _dbContext = dbContext;
         _excelService = excelService;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Item>>> GetItems()
     {
@@ -33,22 +34,17 @@ public class ItemController : Controller
     [HttpGet]
     [Route("GetPaginatedItems/{workspaceId}")]
     [AllowAnonymous]
-    public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1, int pageSize = 10, UserType? filterUserType = null)
+    public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1,
+        int pageSize = 10, UserType? filterUserType = null)
     {
         var workspace = await _dbContext.Workspaces.Include(w => w.Items)
             .SingleOrDefaultAsync(w => w.Id == workspaceId);
-        if (workspace == null)
-        {
-            return NotFound($"Workspace with ID {workspaceId} not found.");
-        }
-    
+        if (workspace == null) return NotFound($"Workspace with ID {workspaceId} not found.");
+
         var query = workspace.Items.AsQueryable();
-    
-        if (filterUserType.HasValue)
-        {
-            query = query.Where(i => i.Type == filterUserType.Value);
-        }
-    
+
+        if (filterUserType.HasValue) query = query.Where(i => i.Type == filterUserType.Value);
+
         var items = query.Skip((page - 1) * pageSize).Take(pageSize)
             .Select(i => new ItemDto
             {
@@ -61,9 +57,9 @@ public class ItemController : Controller
                 Type = i.Type
             })
             .ToList();
-    
+
         var totalItems = query.Count();
-    
+
         var paginatedItems = new PaginatedItems<ItemDto>
         {
             Items = items,
@@ -72,7 +68,7 @@ public class ItemController : Controller
             PageSize = pageSize,
             FilterUserType = filterUserType
         };
-    
+
         return Ok(paginatedItems);
     }
 
@@ -84,10 +80,7 @@ public class ItemController : Controller
     {
         var itemExist = await _dbContext.Items.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (itemExist == null)
-        {
-            return NotFound("Item not found!");
-        }
+        if (itemExist == null) return NotFound("Item not found!");
 
         var itemDto = new ItemDto
         {
@@ -104,7 +97,6 @@ public class ItemController : Controller
     }
 
 
-    
     [HttpPost]
     [Route("AddEditItem")]
     [AllowAnonymous]
@@ -113,7 +105,7 @@ public class ItemController : Controller
         var WorkspaceExist = _dbContext.Workspaces.Where(x => x.Id == addEditItem.WorkspaceId).FirstOrDefault();
         if (addEditItem.Id == 0)
         {
-            Item newItem = new Item();
+            var newItem = new Item();
             newItem.Name = addEditItem.Name;
             newItem.Condition = addEditItem.Condition;
             newItem.Description = addEditItem.Description;
@@ -122,7 +114,7 @@ public class ItemController : Controller
             newItem.WorkspaceId = addEditItem.WorkspaceId;
             newItem.Workspace = WorkspaceExist;
             newItem.Type = addEditItem.Type;
-            
+
             _dbContext.Items.Add(newItem);
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetItems), new { id = addEditItem.Id }, addEditItem);
@@ -132,7 +124,7 @@ public class ItemController : Controller
         if (existingItem != null)
         {
             existingItem.Name = addEditItem.Name;
-            existingItem.Description = addEditItem.Description;    
+            existingItem.Description = addEditItem.Description;
             existingItem.Price = addEditItem.Price;
             existingItem.Quantity = addEditItem.Quantity;
             existingItem.Condition = addEditItem.Condition;
@@ -151,10 +143,7 @@ public class ItemController : Controller
     public async Task<ActionResult> DeleteItem(int id)
     {
         var item = await _dbContext.Items.FindAsync(id);
-        if (item == null)
-        {
-            return NotFound(); // Item with the specified id not found
-        }
+        if (item == null) return NotFound(); // Item with the specified id not found
 
         _dbContext.Items.Remove(item);
         await _dbContext.SaveChangesAsync();
@@ -164,31 +153,29 @@ public class ItemController : Controller
 
     [HttpGet]
     [Route("ExportItems")]
-    public IActionResult ExportItems(UserType? userType = null)
+    [AllowAnonymous]
+    public IActionResult ExportItems(UserType? userType = null, int? workspaceId = null)
     {
         IQueryable<Item> query = _dbContext.Items;
 
-        if (userType != null)
-        {
-            query = query.Where(item => item.Type == userType);
-        }
+        if (userType != null) query = query.Where(item => item.Type == userType);
+
+        if (workspaceId != null) query = query.Where(item => item.WorkspaceId == workspaceId);
 
         var items = query.ToList();
         var excelBytes = _excelService.ExportItemsToExcel(items);
 
         var fileContent = new ByteArrayContent(excelBytes);
-        fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
         {
             FileName = "Items.xlsx"
         };
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        fileContent.Headers.ContentType =
+            new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         var response = new HttpResponseMessage(HttpStatusCode.OK);
         response.Content = fileContent;
 
         return File(excelBytes, fileContent.Headers.ContentType.ToString(), "Items.xlsx");
     }
-
-
-    
 }

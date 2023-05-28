@@ -4,4 +4,4 @@ public enum UserType
 {
     IT,
     STOCK_PROVIDER
-}   
+}

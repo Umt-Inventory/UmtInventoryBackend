@@ -2,6 +2,6 @@
 
 public enum Buildings
 {
-    G1,//Godina 1
+    G1, //Godina 1
     G2 //Godina 1
 }
