@@ -25,11 +25,14 @@ public class UserController : Controller
     [HttpGet]
     [AllowAnonymous]
     public ActionResult<PaginatedUsers<UserDto>> GetUsers(int page = 1, int pageSize = 10,
-        UserRole filterUserRole = UserRole.IT)
+        UserRole filterUserRole = UserRole.IT ,string? searchString = null)
     {
         var query = _dbContext.Users.AsQueryable();
 
         if (filterUserRole != UserRole.IT) query = query.Where(u => u.Role == filterUserRole);
+        
+        if (!string.IsNullOrWhiteSpace(searchString)) 
+            query = query.Where(i => i.Email.ToLower().Contains(searchString.ToLower()));
 
         var users = query
             .Skip((page - 1) * pageSize)

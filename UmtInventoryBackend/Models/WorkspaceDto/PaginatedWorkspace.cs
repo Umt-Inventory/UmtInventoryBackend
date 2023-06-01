@@ -9,4 +9,6 @@ public class PaginatedWorkspace<T>
     public int Page { get; set; }
     public int PageSize { get; set; }
     public Buildings? FilterBuilding { get; set; }
+    
+    public string? SearchString { get; set; }
 }
