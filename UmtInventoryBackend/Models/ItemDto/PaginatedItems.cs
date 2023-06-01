@@ -10,4 +10,6 @@ public class PaginatedItems<T>
     public int Page { get; set; }
     public int PageSize { get; set; }
     public UserType? FilterUserType { get; set; }
+    
+    public string? SearchString { get; set; }
 }

@@ -35,7 +35,7 @@ public class ItemController : Controller
     [Route("GetPaginatedItems/{workspaceId}")]
     [AllowAnonymous]
     public async Task<ActionResult<PaginatedItems<ItemDto>>> GetPaginatedItems(int workspaceId, int page = 1,
-        int pageSize = 10, UserType? filterUserType = null)
+        int pageSize = 10, UserType? filterUserType = null, string? searchString = null)
     {
         var workspace = await _dbContext.Workspaces.Include(w => w.Items)
             .SingleOrDefaultAsync(w => w.Id == workspaceId);
@@ -43,7 +43,11 @@ public class ItemController : Controller
 
         var query = workspace.Items.AsQueryable();
 
-        if (filterUserType.HasValue) query = query.Where(i => i.Type == filterUserType.Value);
+        if (filterUserType.HasValue) 
+            query = query.Where(i => i.Type == filterUserType.Value);
+    
+        if (!string.IsNullOrWhiteSpace(searchString)) 
+            query = query.Where(i => i.Name.ToLower().Contains(searchString.ToLower()));
 
         var items = query.Skip((page - 1) * pageSize).Take(pageSize)
             .Select(i => new ItemDto
@@ -66,7 +70,8 @@ public class ItemController : Controller
             TotalItems = totalItems,
             Page = page,
             PageSize = pageSize,
-            FilterUserType = filterUserType
+            FilterUserType = filterUserType,
+            SearchString = searchString
         };
 
         return Ok(paginatedItems);
