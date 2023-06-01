@@ -23,7 +23,7 @@ public class WorkspaceController : Controller
     [Route("GetPaginatedWorkspaces")]
     [AllowAnonymous]
     public ActionResult<PaginatedWorkspace<Workspace>> GetPaginatedWorkspaces(int page = 1, int pageSize = 100,
-        Buildings? building = null)
+        Buildings? building = null,string? searchString = null)
     {
         var query = _dbContext.Workspaces.AsQueryable();
 
@@ -32,6 +32,8 @@ public class WorkspaceController : Controller
             var buildingValue = building.Value;
             query = query.Where(w => w.Building == buildingValue);
         }
+        if (!string.IsNullOrWhiteSpace(searchString)) 
+            query = query.Where(i => i.Name.ToLower().Contains(searchString.ToLower()));
 
         var workspaces = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         var totalWorkspaces = query.Count();
